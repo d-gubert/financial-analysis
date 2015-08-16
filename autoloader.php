@@ -14,14 +14,13 @@
 $base_dir = __DIR__ . DIRECTORY_SEPARATOR;
 
 spl_autoload_register(function ($class) use ($base_dir) {
+	// replace the namespace prefix with the base directory, replace namespace
+	// separators with directory separators in the relative class name, append
+	// with .php
+	$file = $base_dir . str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php';
 
-    // replace the namespace prefix with the base directory, replace namespace
-    // separators with directory separators in the relative class name, append
-    // with .php
-    $file = $base_dir . str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php';
-
-    // if the file exists, require it
-    if (file_exists($file)) {
-        require $file;
-    }
+	// if the file exists, require it
+	if (file_exists($file)) {
+		require $file;
+	}
 });
