@@ -16,7 +16,11 @@ class Reader implements \FinancialAnalysis\BankStatementReader\ReaderInterface {
 
 			// Line starting with a date in the format dd/mm/yy
 			if (preg_match('/^\d{2}\/\d{2}\/\d{2};/', $line)) {
-				$collection[] = $this->parseOperationLine($line);
+				$operation = $this->parseOperationLine($line);
+
+				if ($operation === null) continue;
+
+				$collection[] = $operation;
 				$data_count++;
 				$was_last_line_an_operation = true;
 			} elseif ($line[0] === ';' && $was_last_line_an_operation) {
@@ -34,8 +38,9 @@ class Reader implements \FinancialAnalysis\BankStatementReader\ReaderInterface {
 
 		$data = explode(';', $line);
 
+		// Uninmportant, just reports bank balance before at the date
 		if ($data[1] === 'SALDO ANTERIOR')
-			return $line;
+			return null;
 
 		try {
 			$operation

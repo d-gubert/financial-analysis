@@ -3,10 +3,24 @@
 namespace FinancialAnalysis\BankStatementReader;
 
 abstract class AbstractBankOperation {
-	private
+	const DEFAULT_CATEGORY = 'DEFAULT';
+
+	protected
 		$operation_date,
 		$operation_value,
 		$category;
+
+	// Banks still don't offer this kind of information, so we need to
+	// guess it from what we have. The bank operation object must handle
+	// this information, not the caller
+	final public function setCategory() {
+		$this->parseCategory();
+
+		if (empty($this->category))
+			throw new \BadMethodCallException('Method parseCategory() should fill the $category property!');
+	}
+
+	// abstract protected function parseCategory();
 
 
 	public function setOperationDate(\DateTime $date) {
@@ -25,7 +39,7 @@ abstract class AbstractBankOperation {
 
 	public function setOperationValue($value) {
 		if (!is_numeric($value))
-			throw new InvalidArgumentException("Invalid operation value $value");
+			throw new \InvalidArgumentException("Invalid operation value $value");
 
 		$this->operation_value = (float) $value;
 
