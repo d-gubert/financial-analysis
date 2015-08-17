@@ -8,7 +8,7 @@ class Main {
 	public function run(array $filenames) {
 		$this->readFiles($filenames);
 		var_dump($this->collection);
-		$this->groupByMonth();
+		$this->groupExpensesByMonth();
 	}
 
 	private function readFiles(array $filenames) {
@@ -28,8 +28,25 @@ class Main {
 		}
 	}
 
-	private function groupByMonth() {
+	private function groupExpensesByMonth() {
+		$data = [];
 
+		foreach ($this->collection as $operation) {
+			list($month, $year) = explode('/', $operation->getOperationDate()->format('m/Y'));
+
+			if (!isset($data[$year]))
+				$data[$year] = [];
+
+			if (!isset($data[$year][$month]))
+				$data[$year][$month] = 0;
+
+			$operation_value = $operation->getOperationValue();
+
+			if ($operation_value < 0)
+				$data[$year][$month] += $operation_value;
+		}
+
+		var_dump($data);
 	}
 }
 
