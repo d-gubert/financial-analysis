@@ -2,20 +2,37 @@
 <?php
 require 'autoloader.php';
 
-$reader = new FinancialAnalysis\BankStatementReader\Itau\Reader;
+class Main {
+	private $collection = [];
 
-$collection = [];
+	public function run(array $filenames) {
+		$this->readFiles($filenames);
+		var_dump($this->collection);
+		$this->groupByMonth();
+	}
 
-$reader->readFromFile('data/ExtratoItau.csv', $collection);
+	private function readFiles(array $filenames) {
+		$bradesco = new FinancialAnalysis\BankStatementReader\Bradesco\Reader;
+		$itau     = new FinancialAnalysis\BankStatementReader\Itau\Reader;
 
-var_dump($collection);
+		foreach ($filenames as $file) {
+			switch (true) {
+				case (strpos(strtolower($file), 'itau') !== false):
+					$itau->readFromFile($file, $this->collection);
+					break;
 
-/*
-$reader = new FinancialAnalysis\BankStatementReader\Bradesco\Reader;
+				case (strpos(strtolower($file), 'bradesco') !== false):
+					$bradesco->readFromFile($file, $this->collection);
+					break;
+			}
+		}
+	}
 
-$collection = [];
+	private function groupByMonth() {
 
-$reader->readFromFile('data/Bradesco_02082015_222633.csv', $collection);
+	}
+}
 
-var_dump($collection);
-*/
+$app = new Main;
+
+$app->run(glob('data/*.csv'));
