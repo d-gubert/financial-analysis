@@ -3,26 +3,10 @@
 namespace FinancialAnalysis\BankStatementReader\Bradesco;
 
 class OperationDataObject extends \FinancialAnalysis\BankStatementReader\AbstractBankOperation {
-	public $line;
-
 	private
-		$operation_identifier_string,
 		$operation_code,
 		$remaining_balance,
 		$description;
-
-	public function setOperationIdentifierString($string) {
-		if (!is_string($string))
-			throw new \InvalidArgumentException("Invalid operation identifier string $string");
-
-		$this->operation_identifier_string = $string;
-
-		return $this;
-	}
-
-	public function getOperationIdentifierString() {
-		return $this->operation_identifier_string;
-	}
 
 	public function setOperationCode($code) {
 		if (!is_numeric($code))
