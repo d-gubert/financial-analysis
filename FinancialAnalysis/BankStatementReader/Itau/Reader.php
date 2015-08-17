@@ -10,9 +10,9 @@ class Reader implements \FinancialAnalysis\BankStatementReader\ReaderInterface {
 
 		while ($line = str_replace(PHP_EOL, '', fgets($file_resource))) {
 			$matches = [];
-			if (preg_match('/^Data: [A-Za-z]+\/([\d]{4})/', $line, $matches)) {
+			if (preg_match('/^Data: [A-Za-z]+\/(\d{4})/', $line, $matches)) {
 				$this->document_year = $matches[1];
-			} elseif (preg_match('/^;[\d]{2}\/[\d]{2};;/', $line)) {
+			} elseif (preg_match('/^;\d{2}\/\d{2};;/', $line)) {
 				if (($operation = $this->parseOperationLine($line)) !== null) {
 					$collection[] = $operation;
 				}
