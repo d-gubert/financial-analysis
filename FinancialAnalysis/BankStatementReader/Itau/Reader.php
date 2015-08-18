@@ -12,7 +12,7 @@ class Reader implements \FinancialAnalysis\BankStatementReader\ReaderInterface {
 			$matches = [];
 			if (preg_match('/^Data: [A-Za-z]+\/(\d{4})/', $line, $matches)) {
 				$this->document_year = $matches[1];
-			} elseif (preg_match('/^;\d{2}\/\d{2};;/', $line)) {
+			} elseif (preg_match('/^;\d{2}\/\d{2}/', $line)) {
 				if (($operation = $this->parseOperationLine($line)) !== null) {
 					$collection[] = $operation;
 				}
@@ -28,14 +28,19 @@ class Reader implements \FinancialAnalysis\BankStatementReader\ReaderInterface {
 		$data = explode(';', $line);
 
 		// Unimportant, just reports bank balance at the date
-		if (strpos($data[3], 'SALDO') !== false)
+		if (strpos($data[3], 'SALDO') !== false || strpos($data[3], 'SDO') !== false)
 			return null;
 
-		$operation
-			->setOperationDate(\DateTime::createFromFormat('d/m/Y', $data[1].'/'.$this->document_year))
-			->setOperationIdentifierString($data[3])
-			->setOperationValue(str_replace(['"', '.', ','], ['', '', '.'], $data[5]))
-			->setRemainingBalance(str_replace(['"', '.', ','], ['', '', '.'], $data[7]));
+		try {
+			$operation
+				->setOperationDate(\DateTime::createFromFormat('d/m/Y', trim($data[1]).'/'.$this->document_year))
+				->setOperationIdentifierString($data[3])
+				->setOperationValue(str_replace(['"', '.', ','], ['', '', '.'], $data[5]))
+				->setRemainingBalance(str_replace(['"', '.', ','], ['', '', '.'], $data[7]));
+			} catch (\Exception $e) {
+				var_dump($operation->line, $data, str_replace(['"', '.', ','], ['', '', '.'], $data[5]), $e->getMessage());
+				exit;
+			}
 
 		return $operation;
 	}

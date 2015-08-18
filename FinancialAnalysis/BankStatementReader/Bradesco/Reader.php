@@ -38,7 +38,7 @@ class Reader implements \FinancialAnalysis\BankStatementReader\ReaderInterface {
 
 		$data = explode(';', $line);
 
-		// Uninmportant, just reports bank balance before at the date
+		// Unimportant, just reports bank balance at the date
 		if ($data[1] === 'SALDO ANTERIOR')
 			return null;
 

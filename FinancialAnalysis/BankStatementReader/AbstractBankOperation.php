@@ -14,8 +14,8 @@ abstract class AbstractBankOperation {
 		$category;
 
 	// Banks still don't offer this kind of information, so we need to
-	// guess it from what we have. The bank operation object must handle
-	// this information, not the caller
+	// guess it based on what we have. The bank operation object must
+	// handle this information, not the caller
 	final public function setCategory() {
 		$this->parseCategory();
 
