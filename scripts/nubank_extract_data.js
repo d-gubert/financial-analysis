@@ -37,6 +37,7 @@
 
 		requestCustomerId() {
 			console.info("Querying customer...");
+			// Some problems with the strict mode's scope made me use this closure to pass variables around...
 			return new Promise((function(self) {return function(resolve, reject) {
 				self.getDataFrom('https://prod-customers.nubank.com.br/api/customers', {resolve: resolve, reject: reject});
 			}})(this));
@@ -44,6 +45,7 @@
 
 		requestEventList(customer) {
 			console.info("Querying events...");
+			// Some problems with the strict mode's scope made me use this closure to pass variables around...
 			return new Promise((function(self, customerId) {return function(resolve, reject) {
 				self.getDataFrom('https://prod-notification.nubank.com.br/api/contacts/'+customerId+'/feed', {resolve: resolve, reject: reject});
 			}})(this, customer.id));
@@ -126,6 +128,7 @@
 		}
 
 		run() {
+			// Some problems with the strict mode's scope made me use this closure to pass variables around...
 			this.requestCustomerId().then((function(self) {
 				return function(response) {
 					return self.requestEventList(response.customer);
