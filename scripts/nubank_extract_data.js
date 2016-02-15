@@ -2,6 +2,11 @@
 	'use strict';
 
 	class NuBankExtractor {
+		constructor() {
+			this.transactionsByDate = new Map();
+			this.maxDate = new Date();
+		}
+		
 		getDataFrom(link, promiseMethods, method) {
 			let xhr = new XMLHttpRequest;
 
@@ -31,25 +36,93 @@
 		}
 
 		requestCustomerId() {
+			console.info("Querying customer...");
 			return new Promise((function(self) {return function(resolve, reject) {
 				self.getDataFrom('https://prod-customers.nubank.com.br/api/customers', {resolve: resolve, reject: reject});
 			}})(this));
 		}
 
 		requestEventList(customer) {
-			console.log(customer);
+			console.info("Querying events...");
 			return new Promise((function(self, customerId) {return function(resolve, reject) {
 				self.getDataFrom('https://prod-notification.nubank.com.br/api/contacts/'+customerId+'/feed', {resolve: resolve, reject: reject});
 			}})(this, customer.id));
 		}
+		
+		ensureTransactionDateExists(date) {
+			if (!this.transactionsByDate.has(date.getTime())) this.transactionsByDate.set(date.getTime(), []);
+		}
 
 		processEventList(eventList) {
-			let transactions = new Set();
-
-			for ($event of eventList) {
-				console.log($event);
+			console.info("Processing events...");
+			for (var event of eventList) {
+				if (event.category !== 'transaction') continue;
+				
+				let transactionDate = new Date(event.time.substring(0,10)); //Gets only the date portion
+				
+				if (event.details.charges === undefined) {
+					this.processSinglePurchase(event, transactionDate);
+				} else {
+					this.processInstallmentPurchase(event, transactionDate);
+				}
 			}
-			// console.log(eventList);
+			
+			console.log(this.transactionsByDate);
+			
+			this.generateReport();
+		}
+		
+		processInstallmentPurchase(transaction, transactionDate) {
+			transaction.amount = transaction.details.charges.amount;
+			
+			for (let i = 1, installmentDate = new Date(transactionDate), transactionDescription = transaction.description; 
+			     i <= transaction.details.charges.count; i++) {
+				installmentDate.setMonth(transactionDate.getMonth() + i - 1);
+				
+				if (installmentDate > this.maxDate) break;
+				
+				transaction.description = transactionDescription + " (Installment #" + i + ")";
+				
+				this.processSinglePurchase(transaction, installmentDate);
+			}
+		}
+		
+		processSinglePurchase(transaction, transactionDate) {
+			this.ensureTransactionDateExists(transactionDate);
+			
+			this.transactionsByDate.get(transactionDate.getTime()).push({
+				description: transaction.description,
+				value: transaction.amount / 100,
+				category: transaction.title,
+				datetime: new Date(transaction.time),
+				nubankId: transaction.id
+			});	
+		}
+		
+		generateReport() {
+			let report = 'description,value,category,datetime,nubankId';
+			
+			this.transactionsByDate.forEach(function(transactionList) {
+				for (let transaction of transactionList) {
+					report += "\n" + 
+							  transaction.nubankId + "," +
+							  '"' + transaction.description + "\"," +
+							  transaction.value + "," +
+							  transaction.category + "," +
+							  transaction.datetime.toLocaleString();
+				}
+			})
+			
+			this.downloadReport(report);
+		}
+		
+		downloadReport(report) {
+			let anchor = document.createElement('a');
+			
+			anchor.setAttribute("href", "data:attachment/csv," + encodeURIComponent(report));
+			anchor.setAttribute("download", "extrato_nubank_" + (new Date()).toLocaleDateString().replace(/\//g,'-') + ".csv");
+
+			anchor.click();
 		}
 
 		run() {
