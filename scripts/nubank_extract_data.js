@@ -105,13 +105,13 @@
 			this.transactionsByDate.forEach(function(transactionList) {
 				for (let transaction of transactionList) {
 					report += "\n" + 
-							  transaction.nubankId + "," +
-							  '"' + transaction.description + "\"," +
-							  transaction.value + "," +
-							  transaction.category + "," +
-							  transaction.datetime.toLocaleString();
+					          transaction.nubankId + "," +
+					          '"' + transaction.description + "\"," +
+					          transaction.value + "," +
+					          transaction.category + "," +
+					          transaction.datetime.toLocaleString();
 				}
-			})
+			});
 			
 			this.downloadReport(report);
 		}
